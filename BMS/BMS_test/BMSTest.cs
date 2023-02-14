@@ -15,10 +15,12 @@ namespace StreamingProject
         [Fact]
         public void Test_SimulateBMSSensorData()
         {
-            var socValues = soc.generateSensorInputStream().Split(",\n");
+            var socCSVInput = soc.generateSensorInputStream();
+            var socValues  = socCSVInput.Remove(socCSVInput.Length-1).Split(",\n");
             Assert.True(socValues.Length == noOfReadings);
-            
-            var tempValues = temperature.generateSensorInputStream().Split(",\n");
+
+            var tempCSVInput = temperature.generateSensorInputStream();
+            var tempValues = tempCSVInput.Remove(tempCSVInput.Length-1).Split(",\n");
             Assert.True(tempValues.Length == noOfReadings);
         }
 
