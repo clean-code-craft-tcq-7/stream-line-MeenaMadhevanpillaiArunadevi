@@ -20,7 +20,7 @@ namespace StreamingProject
         {
             string soc_communication = string.Concat(soc.inputBMSSensor.ToString(), "\n", soc.generateSensorInputStream());
             string temp_communication = string.Concat(temperature.inputBMSSensor.ToString(), "\n", temperature.generateSensorInputStream());
-            string sensors_output = string.Concat(soc_communication,temp_communication);
+            string sensors_output = string.Concat(temp_communication,soc_communication);
             return sensors_output;
         }
 
