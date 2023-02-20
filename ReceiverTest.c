@@ -1,44 +1,46 @@
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
 #include "Receiver.h"
 
+extern tst_BatteryParamInfo ChargeRate_st;
+extern tst_BatteryParamInfo Temperature_st;
 
-TEST_CASE("Tests to check whether sensor data is read from console") 
-{
-  float Temperature_value[readings_count] = {0};
-  float SOC_value[readings_count] = {0};
-  float observedMaxValue, observedMinValue, observedSMAValue, expectedMaxValue, expectedMinValue, expectedSMAValue;
-  receiveAndProcessSensorData(&Temperature_value[0],&SOC_value[0]);
- float expectedoutput[2][2] = {{11,74}, {29,74}};
-  for(int i=0;i<2;i++)
-  {
-    REQUIRE(Temperature_value[i] == expectedoutput[i][0]);
-    REQUIRE(SOC_value[i] == expectedoutput[i][1]);
-  }
-  //To check Max, Min and SMA values of Temperature
-  expectedMaxValue = 45;
-  expectedMinValue = 0;
-  expectedSMAValue = 21.8;
-  observedMaxValue = fetchMaxValue(&Temperature_value[0]);
-  observedMinValue = fetchMinValue(&Temperature_value[0]);
-  observedSMAValue = calculateMovingAverage(&Temperature_value[0]);
-  REQUIRE(observedMaxValue == expectedMaxValue);
-  REQUIRE(observedMinValue == expectedMinValue);
-  REQUIRE(observedSMAValue == expectedSMAValue);
-  
- 
- 
-          
-  // Check Max, Min 
-  expectedMaxValue = 80;
-  expectedMinValue = 20;
-  expectedSMAValue = 58.2;
-  observedMaxValue = fetchMaxValue(&SOC_value[0]);
-  observedMinValue = fetchMinValue(&SOC_value[0]);
-  observedSMAValue = calculateMovingAverage(&SOC_value[0]);
-  REQUIRE(observedMaxValue == expectedMaxValue);
-  REQUIRE(observedMinValue == expectedMinValue);
-  REQUIRE(observedSMAValue == expectedSMAValue);
-  
-  //
-  REQUIRE(printReceivedDataToConsole(&SOC_value[0],80,20,58.2) == 1);
+float Sample[NUM_OF_READINGS];
+
+void testfunctions(){
+	int i =0;
+	float Min =0, Max =0, Avg =  0;
+	for(i = 0; i< NUM_OF_READINGS; i++){
+		Sample[i] = NUM_OF_READINGS - i; //generates numbers from 50 to 1
+	}
+
+	//Test the BatteryParameters readings
+	GetBatteryParameterReadings(0.77, 20);//Test ChargeRate
+	assert(ChargeRate_st.Readings[20] <= 0.77);
+	assert(Temperature_st.Readings[20] == 0);
+	GetBatteryParameterReadings(89, 67); //Test Temperature
+	assert(ChargeRate_st.Readings[17] == 0);
+	assert(Temperature_st.Readings[17] >= 89);
+
+	//Test Sorting
+	CheckSortingAndSwap(0, Sample);
+	assert(Sample[0] == 1);
+
+	//Test Min and Max values
+	GetMinAndMaxValue(Sample, &Min, &Max);
+	assert(Min == 1);
+	assert(Max == 50);
+
+	//Test MovingAverage
+	Avg = CalculateMovingAverage(Sample, 5, 5);
+	assert(Avg == 3);
+}
+
+int main(void) {
+	testfunctions();
+	receiveBatteryParameters();
+
+	return 0;
 }
