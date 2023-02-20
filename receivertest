@@ -1,0 +1,12 @@
+#define CATCH_CONFIG_MAIN
+#include "test/catch.hpp"
+#include "Receiver.h"
+
+
+TEST_CASE("Tests to check whether sensor data is read from console") 
+{
+  float Temperature_value[readings_count] = {0};
+  float SOC_value[readings_count] = {0};
+  float observedMaxValue, observedMinValue, observedSMAValue, expectedMaxValue, expectedMinValue, expectedSMAValue;
+  receiveAndProcessSensorData(&Temperature_value[0],&SOC_value[0]);
+ }
