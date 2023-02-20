@@ -1,5 +1,5 @@
 #include "Receiver.h"
-#include "Sensor_Data_sender.h"
+
 
 void readDataFromConsole(float* Temperature, float* SOC)
 {
