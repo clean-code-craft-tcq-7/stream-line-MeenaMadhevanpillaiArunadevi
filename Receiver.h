@@ -1,12 +1,24 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include <math.h>
+#define NUM_OF_READINGS				50
+#define NUM_OF_BATTERY_PARAMS		2
+#define NUM_OF_VALUES_MOVING_AVG	5
 
-#define readings_count 50
+typedef enum
+{
+	FAILURE,
+	SUCCESS
+}status_en;
 
-void readDataFromConsole(float* Temperature, float* SOC);
-float fetchMaxValue(float *sensorparameter);
-float fetchMinValue(float *sensorparameter);
-float calculateMovingAverage(float *sensorparameter);
-int printReceivedDataToConsole(float *sensorparameter, float maxvalue, float minvalue, float SMA);
-void receiveAndProcessSensorData(float* Temperature, float* SOC);
+typedef struct
+{
+	float Readings[NUM_OF_READINGS];
+	float MinValue;
+	float MaxValue;
+	float MovingAvg;
+}tst_BatteryParamInfo;
+
+void GetBatteryParameterReadings(float num, int Index);
+void CheckSortingAndSwap(int i, float BatteryParam[]);
+void GetMinAndMaxValue(float BatteryParam[], float *ptr_BatteryParam_Min, float *ptr_BatteryParam_Max);
+float CalculateMovingAverage(float BatteryParam[], int LastIndex, int NumOfValues);
+status_en receiveBatteryParameters(void);
+
