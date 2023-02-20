@@ -1,66 +1,89 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "Receiver.h"
 
+tst_BatteryParamInfo ChargeRate_st;
+tst_BatteryParamInfo Temperature_st;
 
-void readDataFromConsole(float* Temperature, float* SOC)
-{
-  for(int index = 0; index < readings_count; index++)
-  {
-    scanf("%f,%f\n",&Temperature[index],&SOC[index]);    
-  }
+//---------------------------------------------------------------------------------------------
+// @brief Gets the parameter readings and filters & updates the BatteryParams
+//---------------------------------------------------------------------------------------------
+void GetBatteryParameterReadings(float num, int Index){
+	if(Index < NUM_OF_READINGS){
+		ChargeRate_st.Readings[Index] = num;
+	}
+	else{
+		Temperature_st.Readings[Index - NUM_OF_READINGS] = num;
+	}
 }
 
-float fetchMaxValue(float *sensorparameter)
-{
-  float maximumvalue = sensorparameter[0];
-  for(int index = 0; index < readings_count; index++)
-  {
-    if(sensorparameter[index] > maximumvalue)
-    {
-      maximumvalue = sensorparameter[index];
-    }
-  }
-  return maximumvalue;
+//---------------------------------------------------------------------------------------------
+// @brief Sorts the BatteryParam Readings
+//---------------------------------------------------------------------------------------------
+void CheckSortingAndSwap(int i, float BatteryParam[]){
+	int j = 0;
+	float temp = 0;
+	for (j = i+1; j < NUM_OF_READINGS; j++)
+	{
+		if (BatteryParam[i] > BatteryParam[j])
+		{
+			temp = BatteryParam[i];
+			BatteryParam[i] = BatteryParam[j];
+			BatteryParam[j] = temp;
+		}
+	}
 }
 
-float fetchMinValue(float *sensorparameter)
-{
-  float minimumvalue = sensorparameter[0]; 
-  for(int index = 0; index < readings_count; index++)
-  {
-    if(sensorparameter[index] < minimumvalue)
-    {
-      minimumvalue = sensorparameter[index];
-    }
-  }
-  return minimumvalue;
+//---------------------------------------------------------------------------------------------
+// @brief Determines the min and max of the battery Param readings
+//---------------------------------------------------------------------------------------------
+void GetMinAndMaxValue(float BatteryParam[], float *ptr_BatteryParam_Min, float *ptr_BatteryParam_Max){
+	int i = 0;
+	//Sort the readings and determine the min and max value
+	for (i = 0; i < NUM_OF_READINGS - 1; i++)
+	{
+		CheckSortingAndSwap(i, BatteryParam);
+	}
+	*ptr_BatteryParam_Min = BatteryParam[0];
+	*ptr_BatteryParam_Max = BatteryParam[NUM_OF_READINGS - 1];
 }
 
-float calculateMovingAverage(float *sensorparameter)
-{
-  float SMAvalue = 0.0;
-  float total = 0.0;
-  for(int index = (readings_count-5); index < readings_count; index++)
-  {
-    total += sensorparameter[index];
-  }
-  SMAvalue = total/5; 
-  return SMAvalue;
+//---------------------------------------------------------------------------------------------
+// @brief Determine the moving average of the Battery Param readings
+//---------------------------------------------------------------------------------------------
+float CalculateMovingAverage(float BatteryParam[], int LastIndex, int NumOfValues){
+	float movingAvg = 0, sum = 0;
+	int index = 0;
+
+	for(index = LastIndex - NumOfValues; index <LastIndex; index++)
+	{
+		sum += BatteryParam[index];
+	}
+	movingAvg = sum/NumOfValues;
+
+	return movingAvg;
 }
 
-int printReceivedDataToConsole(float *sensorparameter, float maxvalue, float minvalue, float SMA)
-{
-  printf("Data received from sender\n");
-  for(int index = 0; index < readings_count; index++)
-  {
-    printf("%f\n",sensorparameter[index]);
-  }
-  printf("Maximum value: %f, Minimum value: %f, SimpleMovingAverage of last 5 values: %f\n",maxvalue,minvalue,SMA);  
-  return 1;
-}
+//---------------------------------------------------------------------------------------------
+// @brief Gets the parameter readings from console and determines the min, max & movingAverage
+//---------------------------------------------------------------------------------------------
+status_en receiveBatteryParameters(void){
+	status_en operationStatus_en = FAILURE;
+	int index = 0;
+	float num = 0;
+	//Get the parameter readings from console
+	for(index = 0; index < NUM_OF_READINGS * NUM_OF_BATTERY_PARAMS; index++)
+	{
+		scanf("%f",&num);
+		GetBatteryParameterReadings(num, index);
+	}
+	//Calculate Moving Average of the received Battery parameters
+	CalculateMovingAverage(ChargeRate_st.Readings, NUM_OF_READINGS, NUM_OF_VALUES_MOVING_AVG);
+	CalculateMovingAverage(Temperature_st.Readings, NUM_OF_READINGS, NUM_OF_VALUES_MOVING_AVG);
+	//Determine the minimum & maximum value from the received readings stream
+	GetMinAndMaxValue(ChargeRate_st.Readings, &ChargeRate_st.MinValue, &ChargeRate_st.MaxValue);
+	GetMinAndMaxValue(Temperature_st.Readings, &Temperature_st.MinValue, &Temperature_st.MaxValue);
+	operationStatus_en = SUCCESS;
 
-void receiveAndProcessSensorData(float* Temperature, float* SOC)
-{
-  readDataFromConsole(Temperature,SOC);
-  printReceivedDataToConsole(Temperature,fetchMaxValue(Temperature),fetchMinValue(Temperature),calculateMovingAverage(Temperature));
-  printReceivedDataToConsole(SOC,fetchMaxValue(SOC),fetchMinValue(SOC),calculateMovingAverage(SOC));
+	return operationStatus_en;
 }
