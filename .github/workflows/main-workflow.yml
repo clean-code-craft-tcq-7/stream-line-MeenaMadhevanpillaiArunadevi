@@ -17,7 +17,7 @@ jobs:
     
     
     - name: build receiver 
-      run: g++ -Wall -Wextra -fprofile-arcs -ftest-coverage -o testreceiver Receiver_Test.c Receiver.c
+      run: g++ -Wall -Wextra -fprofile-arcs -ftest-coverage -o testreceiver ReceiverTest.c Receiver.c
 
     
     - name: collect coverage
