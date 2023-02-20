@@ -75,3 +75,4 @@ status_en receiveBatteryParameters(void){
 	operationStatus_en = SUCCESS;
 
 	return operationStatus_en;
+}
